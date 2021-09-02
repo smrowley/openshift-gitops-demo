@@ -1,5 +1,7 @@
 # Openshift GitOps Demo
 
+<img src="images/argocd-logo.png" width="200">
+
 ## Prereqs
 
 Download the `argocd` cli: https://argoproj.github.io/argo-cd/cli_installation/
@@ -45,7 +47,13 @@ Create an [Application resource](https://github.com/redhat-developer-demos/opens
 oc apply -f https://github.com/redhat-developer-demos/openshift-gitops-examples/raw/main/components/applications/bgd-app.yaml
 ```
 
-Once created, Argo will automatically start syncing the application to the cluster.
+Once created, Argo will automatically start syncing the application to the cluster. You can view the application in the Argo web console:
+
+![](images/bgd-app.png)
+
+Click on it to see the map of all the resources being created and managed:
+
+![](images/synced-app.png)
 
 You will see resources created in the `bgd` namespace:
 
@@ -59,6 +67,10 @@ You can verify the app is deployed with the following URL:
 oc get route bgd --template='{{.spec.host}}' -n bgd
 ```
 
+You can see the app and the blue square:
+
+![](images/bgd.png)
+
 ### Make some manual changes
 
 Add a manual change to the deployment with a patch command:
@@ -69,7 +81,11 @@ oc -n bgd patch deploy/bgd --type='json' -p='[{"op": "replace", "path": "/spec/t
 oc rollout status deploy/bgd -n bgd
 ```
 
-This will change the color of the square in the application. The `Deployment` resource has now drifted from the configuration. Argo will do nothing because the `syncPolicy.selfHeal` is `false`.
+This will change the color of the square in the application.
+
+![](images/bgd-green.png)
+
+The `Deployment` resource has now drifted from the configuration. Argo will do nothing because the `syncPolicy.selfHeal` is `false`.
 
 ```yaml
 [...]
@@ -87,6 +103,10 @@ We can configure self healing to be true, and Argo will sync the application whe
 ```
 oc patch application/bgd-app -n openshift-gitops --type=merge -p='{"spec":{"syncPolicy":{"automated":{"prune":true,"selfHeal":true}}}}'
 ```
+
+Argo will no sync the app and you can see it's reverted to a blue square:
+
+![](images/bgd.png)
 
 ## App of Apps Pattern
 
